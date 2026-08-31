@@ -1,0 +1,19 @@
+name: Production platform control-plane CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.13", cache: pip}
+      - run: pip install -r requirements-dev.txt
+      - run: pytest
+      - run: python -m compileall -q platform_api tests tools
+      - run: python tools/evaluate_economics.py examples/platform-business-case.json --output generated/platform-business-case
+      - run: git diff --exit-code generated/platform-business-case
+      - run: docker build --tag launchrail-platform-api:${{ github.sha }} .

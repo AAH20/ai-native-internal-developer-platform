@@ -1,0 +1,42 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: launchrail-api
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels: {app.kubernetes.io/name: launchrail-api}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: launchrail-api
+spec:
+  scaleTargetRef: {apiVersion: apps/v1, kind: Deployment, name: launchrail-api}
+  minReplicas: 3
+  maxReplicas: 10
+  behavior:
+    scaleDown: {stabilizationWindowSeconds: 300}
+    scaleUp: {stabilizationWindowSeconds: 30}
+  metrics:
+    - type: Resource
+      resource: {name: cpu, target: {type: Utilization, averageUtilization: 65}}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: launchrail-api-default-deny
+spec:
+  podSelector: {matchLabels: {app.kubernetes.io/name: launchrail-api}}
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: ingress-system}}
+      ports: [{protocol: TCP, port: 8080}]
+  egress:
+    - to:
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: database-system}}
+      ports: [{protocol: TCP, port: 5432}]
+    - to:
+        - namespaceSelector: {matchLabels: {kubernetes.io/metadata.name: kube-system}}
+      ports: [{protocol: UDP, port: 53}, {protocol: TCP, port: 53}]

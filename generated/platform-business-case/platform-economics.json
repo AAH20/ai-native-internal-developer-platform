@@ -1,0 +1,20 @@
+{
+  "schema_version": "launchrail-economics/v1",
+  "scenario": "200-engineer internal developer platform business case",
+  "evidence_level": "modeled-business-case",
+  "annual_platform_operating_cost_usd": 240000,
+  "modeled_setup_capacity_recovered_hours": 560,
+  "modeled_setup_capacity_value_usd": 50400,
+  "modeled_environment_waste_avoided_usd": 50400.0,
+  "modeled_ticket_capacity_recovered_hours": 1190.0,
+  "modeled_ticket_capacity_value_usd": 107100.0,
+  "modeled_first_order_value_usd": 207900.0,
+  "modeled_first_order_net_value_usd": -32100.0,
+  "claim_boundary": [
+    "Recovered engineering capacity is not automatically a cash saving",
+    "Environment waste becomes savings only after resources are actually deleted and invoices reconcile",
+    "Revenue acceleration, incident reduction and developer satisfaction are excluded until measured",
+    "All figures are configurable synthetic assumptions"
+  ],
+  "receipt_sha256": "4c7adbc7bfeb6e61d7d9ff89133bdde055775e798fcec22e8a9ff0d72c6dd188"
+}

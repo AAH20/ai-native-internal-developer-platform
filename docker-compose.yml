@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: launchrail
+      POSTGRES_USER: launchrail
+      POSTGRES_PASSWORD: local-development-only
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U launchrail"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - launchrail-postgres:/var/lib/postgresql/data
+  api:
+    build: .
+    environment:
+      LAUNCHRAIL_ENVIRONMENT: development
+      LAUNCHRAIL_DATABASE_URL: postgresql+psycopg://launchrail:local-development-only@postgres/launchrail
+      LAUNCHRAIL_AUTH_MODE: disabled
+    depends_on:
+      postgres: {condition: service_healthy}
+    ports: ["8080:8080"]
+    read_only: true
+    tmpfs: [/tmp]
+volumes:
+  launchrail-postgres:

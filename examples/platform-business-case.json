@@ -1,0 +1,15 @@
+{
+  "scenario":"200-engineer internal developer platform business case",
+  "engineers":200,
+  "new_services_per_year":40,
+  "baseline_setup_hours_per_service":18,
+  "target_setup_hours_per_service":4,
+  "loaded_engineering_hour_usd":90,
+  "ephemeral_environments":200,
+  "abandoned_environment_pct":0.30,
+  "monthly_cost_per_environment_usd":70,
+  "annual_platform_operating_cost_usd":240000,
+  "baseline_platform_tickets_per_month":260,
+  "target_platform_tickets_per_month":90,
+  "minutes_per_ticket":35
+}

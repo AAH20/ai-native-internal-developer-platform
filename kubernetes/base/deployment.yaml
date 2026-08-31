@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: launchrail-api
+  labels: {app.kubernetes.io/name: launchrail-api, app.kubernetes.io/part-of: internal-developer-platform}
+spec:
+  replicas: 3
+  strategy: {type: RollingUpdate, rollingUpdate: {maxUnavailable: 0, maxSurge: 1}}
+  selector:
+    matchLabels: {app.kubernetes.io/name: launchrail-api}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/name: launchrail-api, app.kubernetes.io/part-of: internal-developer-platform}
+    spec:
+      serviceAccountName: launchrail-api
+      automountServiceAccountToken: false
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector: {matchLabels: {app.kubernetes.io/name: launchrail-api}}
+      securityContext: {runAsNonRoot: true, seccompProfile: {type: RuntimeDefault}}
+      containers:
+        - name: api
+          image: ghcr.io/aah20/launchrail-platform-api:0.1.0
+          imagePullPolicy: IfNotPresent
+          ports: [{name: http, containerPort: 8080}]
+          env:
+            - {name: LAUNCHRAIL_ENVIRONMENT, value: production}
+            - {name: LAUNCHRAIL_AUTH_MODE, value: oidc}
+            - {name: LAUNCHRAIL_AUTO_CREATE_SCHEMA, value: "false"}
+          envFrom:
+            - secretRef: {name: launchrail-runtime}
+          readinessProbe: {httpGet: {path: /health/ready, port: http}, periodSeconds: 5, failureThreshold: 3}
+          livenessProbe: {httpGet: {path: /health/live, port: http}, periodSeconds: 10, failureThreshold: 3}
+          startupProbe: {httpGet: {path: /health/live, port: http}, periodSeconds: 2, failureThreshold: 30}
+          resources:
+            requests: {cpu: 100m, memory: 128Mi}
+            limits: {cpu: "1", memory: 512Mi}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities: {drop: ["ALL"]}
+            readOnlyRootFilesystem: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: launchrail-api
+spec:
+  selector: {app.kubernetes.io/name: launchrail-api}
+  ports: [{name: http, port: 80, targetPort: http}]
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: launchrail-api
